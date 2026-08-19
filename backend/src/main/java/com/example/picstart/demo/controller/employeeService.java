@@ -1,6 +1,7 @@
 package com.example.picstart.demo.controller;
 
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.picstart.demo.models.Employee;
@@ -14,7 +15,7 @@ import java.util.List;
 @Service
 public class employeeService {
 
-
+    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private List<Employee> employee = new ArrayList<>();
     
 
@@ -122,6 +123,19 @@ public class employeeService {
         }
         return null;
     }
-    
+
+    public boolean login(String email, String password) {
+        for (Employee emp: employee){
+            if (emp.getEmail().equals(email)){
+                boolean acces = encoder.matches(password, emp.getPassword());
+                return acces;
+                
+            }else{
+                return false;
+            }
+            }
+        return false;
+    }
+
 }
 

@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.picstart.demo.models.Employee;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -52,5 +54,11 @@ public class employeeController {
     public Employee totalUpdate(@PathVariable int id, @RequestBody Employee partialData){
         return employeeService.partialUpdate(id, partialData);
     }
+
+    @GetMapping("/login")
+    public boolean getMethodName(@RequestParam String name, @RequestParam String password) {
+        return employeeService.login(name, password);
+    }
+    
     
 }
