@@ -42,21 +42,86 @@ public class employeeService {
         return employee;
     }
 
-    public String deleteEmployee(int id){
-        for (Employee emp : employee){
+    public Employee listOneEmployee(int id){
+        for (Employee emp : employee) {
+            if (emp.getId() == id){
+                return emp;
+            }
+        }
+        return null;
+    }
+
+    public boolean deleteEmployee(int id){
+        return employee.removeIf(emp -> emp.getId() == id);
+
+    }
+
+    public Employee partialUpdate(int id, Employee partialData) {
+        for (Employee emp : employee) {
             if (emp.getId() == id) {
-                if (emp.getStatus() == "DISABLED") {
-                    emp.setStatus("ACTIVE");
-                    return "User with ID" + id + " successfully activated!";
+                
+                if (partialData.getName() != null) {
+                    emp.setName(partialData.getName());
                 }
-                else{
-                    emp.setStatus("DISABLED");
-                    return "User with ID" + id + " successfully deactivated!";
+                
+                if (partialData.getEmail() != null) {
+                    emp.setEmail(partialData.getEmail());
+                }
+                
+                if (partialData.getPhone() != null) {
+                    emp.setPhone(partialData.getPhone());
+                }
+                
+                if (partialData.getStatus() != null) {
+                    emp.setStatus(partialData.getStatus());
+                }
+                
+                if (partialData.getPost() != null) {
+                    emp.setPost(partialData.getPost());
+                }
+                
+                if (partialData.getDepartment() != null) {
+                    emp.setDepartment(partialData.getDepartment());
+                }
+                
+                if (partialData.getSalary() != 0.0) {
+                    emp.setSalary(partialData.getSalary());
+                }
+                
+                if (partialData.getCity() != null) {
+                    emp.setCity(partialData.getCity());
+                }
+
+                if (partialData.getAdmin() != null){
+                    emp.setAdmin(partialData.getAdmin());
+                }
+
+                return emp; 
+            }
+        }
+        return null;
+    }
+
+    public Employee totalUpdate(int id, Employee totalData){
+        for (Employee emp: employee){
+            if (emp.getId() == id) {
+                if (emp.getId() == id){
+                    emp.setName(totalData.getName());
+                    emp.setEmail(totalData.getEmail());
+                    emp.setPhone(totalData.getPhone());
+                    emp.setPost(totalData.getPost());
+                    emp.setDepartment(totalData.getDepartment());
+                    emp.setSalary(totalData.getSalary());
+                    emp.setCity(totalData.getCity());
+                    emp.setStatus(totalData.getStatus());
+                    emp.setAdmin(totalData.getAdmin());
+
+                    return emp;
                 }
             }
         }
-        return "No user with ID" + id + "found";
-
-
+        return null;
     }
+    
 }
+
