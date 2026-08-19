@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+// import java.util.HashMap;
+import java.util.Map;
 
 import com.example.picstart.demo.models.Employee;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,6 +60,16 @@ public class employeeController {
     @GetMapping("/login")
     public boolean getMethodName(@RequestParam String name, @RequestParam String password) {
         return employeeService.login(name, password);
+    }
+    
+    @GetMapping("/searchName/{search}")
+    public List<Employee> searchName(@RequestParam String search) {
+        return employeeService.search(search);
+    }
+    
+    @GetMapping("/indicators")
+    public Map<String, Integer> GetIndicators() {
+        return employeeService.indicators();
     }
     
     

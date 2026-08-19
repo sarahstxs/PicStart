@@ -17,7 +17,7 @@ public class Employee {
     private Boolean admin;
 
     // Constructors
-    public Employee (int id, String name,String password, String email, String phone, String post, String department, double salary, String city){
+    public Employee (int id, String name,String password, String email, String phone, String post, String department, double salary, String city, String status){
         this.id = id;
         this.name = name;
 
@@ -31,7 +31,7 @@ public class Employee {
         this.department = department;
         this.salary = salary;
         this.city = city;
-        this.status = "ACTIVE";
+        this.status = status.toUpperCase();
         this.admin = false;
     }
 

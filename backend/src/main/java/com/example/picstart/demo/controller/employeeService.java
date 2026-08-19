@@ -3,6 +3,8 @@ package com.example.picstart.demo.controller;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.example.picstart.demo.models.Employee;
 // import com.fasterxml.jackson.annotation.JacksonAnnotation;
@@ -20,8 +22,11 @@ public class employeeService {
     
 
     public employeeService(){
-        employee.add(new Employee (1, "Renan Santos de Almeida","123", "RenanSantos@picpay.com", "11 95677-5122", "Gerente de projetos", "la", 67.00, "la"));
-        employee.add(new Employee (2, "Jair Messias Bolsonaro","DeusPatriaFamilia", "bolsonaro@picpay.com", "11 12345-6789", "la", "la", 67.00, "la"));
+        employee.add(new Employee (1, "Renan Santos de Almeida","123", "RenanSantos@picpay.com", "11 95677-5122", "Director", "TI", 20000, "São Paulo", "HIRED"));
+        employee.add(new Employee (2, "Jair Messias Bolsonaro","DeusPatriaFamilia", "bolsonaro@picpay.com", "11 12345-6789", "Director", "TI", 60000, "São Paulo", "UNDER REVIEW"));
+        employee.add(new Employee (3, "Guilherme Brandão","123", "Gui@picpay.com", "11 99999-9999", "Director", "TI", 90000, "TI", "REJECTED"));
+        employee.add(new Employee (3, "Rebecca Sarah Duarte Paulucci","Rebecca@01", "becca@picpay.com", "11 34577-5246","Systems Analyst", "TI", 10000, "São Paulo", "HIRED"));
+        employee.add(new Employee (3, "João Pedro Cappeli","Jojo@123", "jojo@picpay.com", "11 0000-0000","Systems Analyst", "TI", 5000, "São Paulo", "UNDER REVIEW"));
 
     }
 
@@ -60,10 +65,6 @@ public class employeeService {
     public Employee partialUpdate(int id, Employee partialData) {
         for (Employee emp : employee) {
             if (emp.getId() == id) {
-                
-                if (partialData.getName() != null) {
-                    emp.setName(partialData.getName());
-                }
                 
                 if (partialData.getEmail() != null) {
                     emp.setEmail(partialData.getEmail());
@@ -137,5 +138,45 @@ public class employeeService {
         return false;
     }
 
+    public List<Employee> search(String search){
+        List<Employee> founds = new ArrayList<>();
+
+        for (Employee emp: employee){
+            if (emp.getName().toLowerCase().contains(search.toLowerCase())){
+                founds.add(emp);
+            }
+        }
+        return founds;
+    }
+
+    public Map<String, Integer> indicators() {
+
+        Map<String, Integer> indicators = new HashMap<>();
+
+        indicators.put("UNDER REVIEW", indicators.getOrDefault("UNDER REVIEW", 0));
+        indicators.put("APPROVED", indicators.getOrDefault("APPROVED", 0));
+        indicators.put("REJECTED", indicators.getOrDefault("REJECTED", 0));
+        indicators.put("HIRED", indicators.getOrDefault("HIRED", 0));
+        
+        // Under review; Approved; Rejected; Hired.
+        for (Employee emp: employee){
+            switch (emp.getStatus()){
+                case "UNDER REVIEW":
+                    indicators.put("UNDER REVIEW", indicators.getOrDefault("UNDER REVIEW", 0) + 1);
+                    break;
+                case "APPROVED":
+                    indicators.put("APPROVED", indicators.getOrDefault("APPROVED", 0) + 1);
+                    break;
+                case "REJECTED":
+                    indicators.put("REJECTED", indicators.getOrDefault("REJECTED", 0) + 1);
+                    break;
+                case "HIRED":
+                    indicators.put("HIRED", indicators.getOrDefault("HIRED", 0) + 1);
+                    break;
+                default:
+            }
+        }
+        return indicators;
+    }
 }
 
