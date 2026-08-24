@@ -1,26 +1,37 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import AppShell from "./components/AppShell.jsx";
+import ComingSoonPage from "./pages/ComingSoonPage.jsx";
+import OverviewPage from "./pages/OverviewPage.jsx";
 
+function NotFoundPage() {
+  return (
+    <section className="empty-page" aria-labelledby="not-found-title">
+      <h1 id="not-found-title">Página não encontrada</h1>
+      <p>Volte para a página inicial para continuar.</p>
+    </section>
+  );
+}
 
-export default function AppRoutes() {
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rotas de Login */}
-        <Route path="/" element={<App/>} />
-        <Route path="/login" element={<Login/>} />
-
-        {/* Rotas Privadas */}
-        <Route element={<PrivateRoute/>}>
-          <Route path="/overview" element={<Overview/>}/>
-          <Route path="/users" element={<Users/>}/>
-          <Route path="/passwordRecovery" element={<PasswordRecovery/>}/>
-          <Route path="/productTransfer" element={<ProductTransfer/>}/>
-          <Route path="/settings" element={<Settings/>}/>
-          <Route path="/usageHistory" element={<UsageHistory/>}/>
+        <Route element={<AppShell />}>
+          <Route path="/" element={<OverviewPage />} />
+          <Route
+            path="/employees"
+            element={<ComingSoonPage title="Funcionários" />}
+          />
+          <Route
+            path="/reports"
+            element={<ComingSoonPage title="Relatórios" />}
+          />
+          <Route
+            path="/settings"
+            element={<ComingSoonPage title="Configurações" />}
+          />
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
-
-        {/* Um 'else' para erros */}
-        <Route path="*" element={<ErrorPage/>}></Route>
       </Routes>
     </BrowserRouter>
   );
