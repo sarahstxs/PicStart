@@ -44,7 +44,7 @@ public class employeeController {
     }
     
     @DeleteMapping("/delete/{id}")
-    public boolean deleteEmployee(@RequestBody int id) {
+    public boolean deleteEmployee(@PathVariable int id) {
         return employeeService.deleteEmployee(id);
     }
 
@@ -54,7 +54,7 @@ public class employeeController {
     }
     @PutMapping("/put/{id}")
     public Employee totalUpdate(@PathVariable int id, @RequestBody Employee partialData){
-        return employeeService.partialUpdate(id, partialData);
+        return employeeService.totalUpdate(id, partialData);
     }
 
     @GetMapping("/login")

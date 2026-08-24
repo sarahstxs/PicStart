@@ -27,34 +27,6 @@ export default function OverviewPage() {
           </p>
         </div>
       </article>
-
-      <section className="next-steps" aria-labelledby="next-steps-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Construção incremental</p>
-            <h2 id="next-steps-title">Próximas entregas</h2>
-          </div>
-          <span className="step-count">Etapa 2 de 10</span>
-        </div>
-
-        <div className="step-grid">
-          <div className="step-card step-card-active">
-            <span className="step-number">01</span>
-            <strong>Layout base</strong>
-            <span>Menu, cabeçalho e área principal.</span>
-          </div>
-          <div className="step-card">
-            <span className="step-number">02</span>
-            <strong>Funcionários</strong>
-            <span>Lista temporária para aprender React.</span>
-          </div>
-          <div className="step-card">
-            <span className="step-number">03</span>
-            <strong>Integração</strong>
-            <span>Dados reais vindos da API.</span>
-          </div>
-        </div>
-      </section>
     </section>
   );
 }
