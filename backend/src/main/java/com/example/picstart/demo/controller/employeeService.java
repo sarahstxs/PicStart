@@ -25,8 +25,8 @@ public class employeeService {
         employee.add(new Employee (1, "Renan Santos de Almeida","123", "RenanSantos@picpay.com", "11 95677-5122", "Director", "TI", 20000, "São Paulo", "HIRED"));
         employee.add(new Employee (2, "Jair Messias Bolsonaro","DeusPatriaFamilia", "bolsonaro@picpay.com", "11 12345-6789", "Director", "TI", 60000, "São Paulo", "UNDER REVIEW"));
         employee.add(new Employee (3, "Guilherme Brandão","123", "Gui@picpay.com", "11 99999-9999", "Director", "TI", 90000, "TI", "REJECTED"));
-        employee.add(new Employee (3, "Rebecca Sarah Duarte Paulucci","Rebecca@01", "becca@picpay.com", "11 34577-5246","Systems Analyst", "TI", 10000, "São Paulo", "HIRED"));
-        employee.add(new Employee (3, "João Pedro Cappeli","Jojo@123", "jojo@picpay.com", "11 0000-0000","Systems Analyst", "TI", 5000, "São Paulo", "UNDER REVIEW"));
+        employee.add(new Employee (4, "Rebecca Sarah Duarte Paulucci","Rebecca@01", "becca@picpay.com", "11 34577-5246","Systems Analyst", "TI", 10000, "São Paulo", "HIRED"));
+        employee.add(new Employee (5, "João Pedro Cappeli","Jojo@123", "jojo@picpay.com", "11 0000-0000","Systems Analyst", "TI", 5000, "São Paulo", "UNDER REVIEW"));
 
     }
 
@@ -36,11 +36,14 @@ public class employeeService {
             newEmployee.setId(1);
         }
         else {
-            Employee lastRegister = employee.get(employee.size() - 1) ;
-            newEmployee.setId(lastRegister.getId() + 1);
+            int nextId = employee.stream()
+                    .mapToInt(Employee::getId)
+                    .max()
+                    .orElse(0) + 1;
+            newEmployee.setId(nextId);
         }
         employee.add(newEmployee);
-        return employee.get(newEmployee.getId()-1);
+        return newEmployee;
         
     }
 
@@ -58,7 +61,14 @@ public class employeeService {
     }
 
     public boolean deleteEmployee(int id){
-        return employee.removeIf(emp -> emp.getId() == id);
+        for (int index = 0; index < employee.size(); index++) {
+            if (employee.get(index).getId() == id) {
+                employee.remove(index);
+                return true;
+            }
+        }
+
+        return false;
 
     }
 
@@ -179,4 +189,3 @@ public class employeeService {
         return indicators;
     }
 }
-
