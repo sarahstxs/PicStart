@@ -36,11 +36,14 @@ public class employeeService {
             newEmployee.setId(1);
         }
         else {
-            Employee lastRegister = employee.get(employee.size() - 1) ;
-            newEmployee.setId(lastRegister.getId() + 1);
+            int nextId = employee.stream()
+                    .mapToInt(Employee::getId)
+                    .max()
+                    .orElse(0) + 1;
+            newEmployee.setId(nextId);
         }
         employee.add(newEmployee);
-        return employee.get(newEmployee.getId()-1);
+        return newEmployee;
         
     }
 
@@ -179,4 +182,3 @@ public class employeeService {
         return indicators;
     }
 }
-

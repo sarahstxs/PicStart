@@ -1,4 +1,7 @@
 package com.example.picstart.demo.models;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class Employee {
@@ -6,6 +9,9 @@ public class Employee {
 
     private int id;
     private String name;
+
+    // A senha pode ser recebida no cadastro, mas nunca deve voltar na resposta da API.
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String email;
     private String phone;
@@ -17,13 +23,15 @@ public class Employee {
     private Boolean admin;
 
     // Constructors
+    @JsonCreator
+    public Employee() {
+        this.admin = false;
+    }
+
     public Employee (int id, String name,String password, String email, String phone, String post, String department, double salary, String city, String status){
         this.id = id;
         this.name = name;
-
-        String enteredPassword = password;
-        String encryptedPssword = encoder.encode(enteredPassword);
-        this.password = encryptedPssword;
+        setPassword(password);
 
         this.email = email;
         this.phone = phone;
@@ -43,6 +51,9 @@ public class Employee {
     public void setName(String name) {this.name = name;}
 
     public String getPassword(){return password;}
+    public void setPassword(String password){
+        this.password = password == null ? null : encoder.encode(password);
+    }
 
     public String getEmail(){return email;} 
     public void setEmail(String email){this.email = email;}
