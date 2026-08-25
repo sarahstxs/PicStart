@@ -4,8 +4,6 @@ import { useAuth } from "../context/useAuth.js";
 const menuItems = [
   { label: "Visão geral", path: "/", icon: "⌂" },
   { label: "Funcionários", path: "/employees", icon: "◎" },
-  { label: "Relatórios", path: "/reports", icon: "▣" },
-  { label: "Configurações", path: "/settings", icon: "⚙" },
 ];
 
 export default function AppShell() {
