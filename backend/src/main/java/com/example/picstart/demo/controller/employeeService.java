@@ -182,6 +182,9 @@ public class employeeService {
                 "Systems Analyst", "TI", 10000, "São Paulo", "HIRED", "123");
         addSeedEmployee(5, "João Pedro Cappeli", "joao@picpay.com", "11 0000-0000",
                 "Systems Analyst", "TI", 5000, "São Paulo", "UNDER REVIEW", "123");
+        // Login padrão para demonstração
+        addSeedEmployee(6, "Admin PicStart", "admin@picstart.com", "11 99999-9999",
+                "Admin", "TI", 15000, "São Paulo", "HIRED", "admin");
     }
 
     private void addSeedEmployee(int id, String name, String email, String phone, String post,

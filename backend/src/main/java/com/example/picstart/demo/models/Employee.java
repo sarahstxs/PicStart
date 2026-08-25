@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Employee {
 
-    private int id;
+    private Integer id;
     private String name;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
@@ -19,8 +19,8 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(int id, String name, String email, String phone, String post,
-            String department, double salary, String city, String status) {
+    public Employee(Integer id, String name, String email, String phone, String post,
+            String department, Double salary, String city, String status) {
         this.id = id;
         this.name = name;
         this.email = email;
@@ -33,10 +33,10 @@ public class Employee {
     }
 
     public int getId() {
-        return id;
+        return id == null ? 0 : id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 

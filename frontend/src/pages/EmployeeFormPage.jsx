@@ -4,6 +4,7 @@ import useEmployee from "../hooks/useEmployee.js";
 import {
   createEmployee,
   updateEmployee,
+  updateEmployeePartial,
 } from "../services/employeeService.js";
 import { statusOptions } from "../utils/employeePresentation.js";
 
@@ -76,6 +77,27 @@ function EmployeeEditorForm({ employee, id, isEditing }) {
     setForm((currentForm) => ({ ...currentForm, [name]: value }));
   }
 
+  function getChangedFields() {
+    const changed = {};
+    for (const key of Object.keys(form)) {
+      const current = key === "salary" ? String(form[key] ?? "") : String(form[key] ?? "");
+      const initial = key === "salary" ? String(initialValues[key] ?? "") : String(initialValues[key] ?? "");
+      if (current !== initial) {
+        changed[key] = form[key];
+      }
+    }
+    if ("salary" in changed) {
+      changed.salary = changed.salary === "" ? 0 : Number(changed.salary);
+    }
+    return changed;
+  }
+
+  const changedFields = isEditing ? getChangedFields() : {};
+  const changedCount = Object.keys(changedFields).length;
+  const totalFields = Object.keys(initialValues).length;
+  const isAllChanged = isEditing && changedCount === totalFields && changedCount > 0;
+  const willUsePut = isAllChanged;
+
   async function handleSubmit(event) {
     event.preventDefault();
     setIsSubmitting(true);
@@ -83,10 +105,24 @@ function EmployeeEditorForm({ employee, id, isEditing }) {
 
     try {
       if (isEditing) {
-        await updateEmployee(id, {
-          ...form,
-          salary: form.salary === "" ? 0 : Number(form.salary),
-        });
+        const changed = getChangedFields();
+        if (Object.keys(changed).length === 0) {
+          setSubmitError("Nenhuma alteração detectada.");
+          return;
+        }
+        const allChanged = Object.keys(changed).length === totalFields;
+        if (allChanged) {
+          await updateEmployee(id, {
+            ...form,
+            salary: form.salary === "" ? 0 : Number(form.salary),
+          });
+        } else {
+          const patchPayload = { ...changed };
+          if ("salary" in patchPayload) {
+            patchPayload.salary = patchPayload.salary === "" ? 0 : Number(patchPayload.salary);
+          }
+          await updateEmployeePartial(id, patchPayload);
+        }
         navigate(`/employees/${id}`);
       } else {
         const payload = {
@@ -209,7 +245,11 @@ function EmployeeEditorForm({ employee, id, isEditing }) {
 
         <p className="form-help">
           {isEditing
-            ? "A edição completa envia todos os dados usando PUT."
+            ? willUsePut
+              ? "Todos os campos alterados → será usado PUT (substituição total)."
+              : changedCount > 0
+                ? `Alteração parcial (${changedCount}/${totalFields}) → será usado PATCH.`
+                : "Altere ao menos um campo. Todos alterados = PUT, parcial = PATCH."
             : "O status inicial é definido pela API no momento do cadastro."}
         </p>
 
@@ -227,11 +267,16 @@ function EmployeeEditorForm({ employee, id, isEditing }) {
             className="primary-button"
             type="submit"
             disabled={isSubmitting}
+            title={isEditing ? (willUsePut ? "PUT - todos os campos" : "PATCH - parcial") : undefined}
           >
             {isSubmitting
               ? "Salvando..."
               : isEditing
-                ? "Salvar alterações"
+                ? willUsePut
+                  ? "Salvar com PUT"
+                  : changedCount > 0
+                    ? "Salvar com PATCH"
+                    : "Salvar alterações"
                 : "Cadastrar funcionário"}
           </button>
         </div>
