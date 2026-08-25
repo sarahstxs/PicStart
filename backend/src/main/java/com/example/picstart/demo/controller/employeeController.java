@@ -63,7 +63,7 @@ public class employeeController {
     }
     
     @GetMapping("/searchName/{search}")
-    public List<Employee> searchName(@RequestParam String search) {
+    public List<Employee> searchName(@PathVariable String search) {
         return employeeService.search(search);
     }
     
