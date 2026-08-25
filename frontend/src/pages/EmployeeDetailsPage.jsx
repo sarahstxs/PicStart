@@ -1,44 +1,12 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import useEmployee from "../hooks/useEmployee.js";
-
-const statusPresentation = {
-  "UNDER REVIEW": {
-    label: "Em análise",
-    className: "status-analysis",
-  },
-  APPROVED: {
-    label: "Aprovado",
-    className: "status-approved",
-  },
-  REJECTED: {
-    label: "Reprovado",
-    className: "status-rejected",
-  },
-  HIRED: {
-    label: "Contratado",
-    className: "status-hired",
-  },
-};
-
-function formatSalary(salary) {
-  if (typeof salary !== "number") {
-    return "—";
-  }
-
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(salary);
-}
-
-function getStatusPresentation(status) {
-  return (
-    statusPresentation[status?.toUpperCase()] ?? {
-      label: status || "Sem status",
-      className: "status-analysis",
-    }
-  );
-}
+import { updateEmployeePartial } from "../services/employeeService.js";
+import {
+  formatSalary,
+  getStatusPresentation,
+  statusOptions,
+} from "../utils/employeePresentation.js";
 
 function Detail({ label, value }) {
   return (
@@ -49,9 +17,129 @@ function Detail({ label, value }) {
   );
 }
 
+function PartialUpdateForm({ employee, onUpdated }) {
+  const [form, setForm] = useState({
+    salary: employee.salary ?? "",
+    status: employee.status || "UNDER REVIEW",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setFeedback(null);
+
+    const payload = {};
+    const salary = form.salary === "" ? null : Number(form.salary);
+
+    if (form.status !== employee.status) {
+      payload.status = form.status;
+    }
+
+    if (salary !== null && salary !== Number(employee.salary)) {
+      payload.salary = salary;
+    }
+
+    if (Object.keys(payload).length === 0) {
+      setFeedback({
+        type: "error",
+        message: "Altere o status ou o salário para enviar um PATCH.",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const updatedEmployee = await updateEmployeePartial(employee.id, payload);
+      setForm({
+        salary: updatedEmployee.salary ?? salary,
+        status: updatedEmployee.status || form.status,
+      });
+      onUpdated(updatedEmployee);
+      setFeedback({
+        type: "success",
+        message: "Atualização parcial enviada com PATCH.",
+      });
+    } catch (requestError) {
+      setFeedback({
+        type: "error",
+        message: requestError.message || "Não foi possível atualizar os dados.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <article className="patch-card">
+      <div className="patch-card-heading">
+        <div>
+          <p className="eyebrow">Atualização parcial</p>
+          <h2>Alterar status ou salário</h2>
+          <p>Somente os campos modificados serão enviados para a API.</p>
+        </div>
+        <span className="method-badge">PATCH</span>
+      </div>
+
+      <form className="patch-form" onSubmit={handleSubmit}>
+        <label className="form-field" htmlFor="patch-status">
+          <span>Status</span>
+          <select
+            id="patch-status"
+            value={form.status}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                status: event.target.value,
+              }))
+            }
+          >
+            {statusOptions.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="form-field" htmlFor="patch-salary">
+          <span>Salário</span>
+          <input
+            id="patch-salary"
+            type="number"
+            min="0"
+            step="0.01"
+            value={form.salary}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                salary: event.target.value,
+              }))
+            }
+          />
+        </label>
+        <button className="primary-button" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Enviando..." : "Enviar PATCH"}
+        </button>
+      </form>
+
+      {feedback && (
+        <p
+          className={
+            feedback.type === "success" ? "success-message" : "form-error"
+          }
+          role={feedback.type === "success" ? "status" : "alert"}
+        >
+          {feedback.message}
+        </p>
+      )}
+    </article>
+  );
+}
+
 export default function EmployeeDetailsPage() {
   const { id } = useParams();
-  const { employee, isLoading, error } = useEmployee(id);
+  const { employee, isLoading, error, replaceEmployee } = useEmployee(id);
 
   if (isLoading) {
     return (
@@ -113,9 +201,14 @@ export default function EmployeeDetailsPage() {
           <Detail label="Departamento" value={employee.department} />
           <Detail label="Cidade" value={employee.city} />
           <Detail label="Salário" value={formatSalary(employee.salary)} />
-          <Detail label="Administrador" value={employee.admin ? "Sim" : "Não"} />
         </dl>
       </article>
+
+      <PartialUpdateForm
+        key={employee.id}
+        employee={employee}
+        onUpdated={replaceEmployee}
+      />
     </section>
   );
 }

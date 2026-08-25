@@ -5,6 +5,7 @@ export default function useEmployee(id) {
   const [employee, setEmployee] = useState(null);
   const [isLoading, setIsLoading] = useState(Boolean(id));
   const [error, setError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -43,7 +44,16 @@ export default function useEmployee(id) {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, reloadKey]);
 
-  return { employee, isLoading, error };
+  function reload() {
+    setReloadKey((currentKey) => currentKey + 1);
+  }
+
+  function replaceEmployee(nextEmployee) {
+    setEmployee(nextEmployee);
+    setError(null);
+  }
+
+  return { employee, isLoading, error, reload, replaceEmployee };
 }
