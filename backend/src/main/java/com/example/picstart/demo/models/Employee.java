@@ -1,81 +1,114 @@
 package com.example.picstart.demo.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 public class Employee {
-    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     private int id;
     private String name;
-
-    // A senha pode ser recebida no cadastro, mas nunca deve voltar na resposta da API.
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     private String email;
     private String phone;
     private String post;
     private String department;
-    private double salary;
+    private Double salary;
     private String city;
     private String status;
-    private Boolean admin;
 
-    // Constructors
-    @JsonCreator
     public Employee() {
-        this.admin = false;
     }
 
-    public Employee (int id, String name,String password, String email, String phone, String post, String department, double salary, String city, String status){
+    public Employee(int id, String name, String email, String phone, String post,
+            String department, double salary, String city, String status) {
         this.id = id;
         this.name = name;
-        setPassword(password);
-
         this.email = email;
         this.phone = phone;
         this.post = post;
         this.department = department;
         this.salary = salary;
         this.city = city;
-        this.status = status.toUpperCase();
-        this.admin = false;
+        setStatus(status);
     }
 
-    // Getters and Setters
-    public int getId(){return id;}
-    public void setId(int id){this.id = id;}
-
-    public String getName(){return name;}
-    public void setName(String name) {this.name = name;}
-
-    public String getPassword(){return password;}
-    public void setPassword(String password){
-        this.password = password == null ? null : encoder.encode(password);
+    public int getId() {
+        return id;
     }
 
-    public String getEmail(){return email;} 
-    public void setEmail(String email){this.email = email;}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public String getPhone() {return phone;}
-    public void setPhone(String phone){this.phone = phone;}
+    public String getName() {
+        return name;
+    }
 
-    public String getPost(){return post;}
-    public void setPost(String post) {this.post = post;}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-    public String getDepartment(){return department;}
-    public void setDepartment(String department) {this.department = department;}
+    public String getPassword() {
+        return password;
+    }
 
-    public double getSalary() {return salary;}
-    public void setSalary(double salary) {this.salary = salary;}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-    public String getCity(){return city;}
-    public void setCity(String city) {this.city = city;}
+    public String getEmail() {
+        return email;
+    }
 
-    public String getStatus(){return status;}
-    public void setStatus(String status){this.status = status;}
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public Boolean getAdmin(){return admin;}
-    public void setAdmin(Boolean admin){this.admin = admin;}
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getPost() {
+        return post;
+    }
+
+    public void setPost(String post) {
+        this.post = post;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public Double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(Double salary) {
+        this.salary = salary;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status == null ? null : status.toUpperCase();
+    }
 }

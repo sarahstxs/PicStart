@@ -1,16 +1,61 @@
-# React + Vite
+# PicStart
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema web para gerenciamento de funcionários em processo de contratação.
 
-Currently, two official plugins are available:
+## Tecnologia escolhida
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+O frontend utiliza React com Vite. React foi escolhido pela componentização,
+pela atualização reativa da interface e pela comunicação direta com a API REST
+usando Fetch API.
 
-## React Compiler
+## Como executar
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+A API Spring Boot deve estar disponível em `http://localhost:6767`.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+cd backend
+bash mvnw spring-boot:run
+```
+
+Ao abrir o frontend, use o acesso de teste abaixo:
+
+- E-mail: `RenanSantos@picpay.com`
+- Senha: `123`
+
+## Funcionalidades
+
+- Cadastro de funcionário com validação de nome, e-mail e cargo.
+- Listagem e consulta individual por ID.
+- Busca combinada por nome, cargo e status.
+- Edição completa usando PUT.
+- Atualização parcial de status e salário usando PATCH.
+- Exclusão com confirmação.
+- Dashboard com total de funcionários e distribuição por status.
+- Login integrado com a API, sessão persistida e logout.
+- Rotas privadas e proteção automática das requisições com token.
+- Layout responsivo e navegação acessível.
+
+## Comunicação com a API
+
+| Operação | Método | Endpoint |
+| --- | --- | --- |
+| Login | POST | `/api/employee/login` |
+| Logout | POST | `/api/employee/logout` |
+| Cadastrar | POST | `/api/employee/post` |
+| Listar | GET | `/api/employee/get` |
+| Consultar por ID | GET | `/api/employee/get/{id}` |
+| Buscar | GET | `/api/employee/search?name=&post=&status=` |
+| Atualizar completamente | PUT | `/api/employee/put/{id}` |
+| Atualizar parcialmente | PATCH | `/api/employee/patch/{id}` |
+| Excluir | DELETE | `/api/employee/delete/{id}` |
+| Indicadores | GET | `/api/employee/indicators` |
+
+O proxy do Vite encaminha `/api` para o backend Spring Boot durante o
+desenvolvimento. Com exceção do login, as rotas da API exigem o token de
+sessão enviado no cabeçalho `Authorization`.

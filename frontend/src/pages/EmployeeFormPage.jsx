@@ -5,29 +5,20 @@ import {
   createEmployee,
   updateEmployee,
 } from "../services/employeeService.js";
+import { statusOptions } from "../utils/employeePresentation.js";
 
 const initialForm = {
   name: "",
-  password: "",
   email: "",
   phone: "",
   post: "",
   department: "",
   salary: "",
   city: "",
-  status: "UNDER REVIEW",
-  admin: false,
+  status: "ACTIVE",
 };
 
-const statusOptions = [
-  { value: "UNDER REVIEW", label: "Em análise" },
-  { value: "APPROVED", label: "Aprovado" },
-  { value: "REJECTED", label: "Reprovado" },
-  { value: "HIRED", label: "Contratado" },
-  { value: "ACTIVE", label: "Ativo" },
-];
-
-function Field({ children, label, name, required = true, ...props }) {
+function Field({ children, label, name, required = false, ...props }) {
   return (
     <label className="form-field" htmlFor={name}>
       <span>{label}</span>
@@ -37,7 +28,7 @@ function Field({ children, label, name, required = true, ...props }) {
   );
 }
 
-function SelectField({ children, label, name, required = true, ...props }) {
+function SelectField({ children, label, name, required = false, ...props }) {
   return (
     <label className="form-field" htmlFor={name}>
       <span>{label}</span>
@@ -51,7 +42,6 @@ function SelectField({ children, label, name, required = true, ...props }) {
 function mapEmployeeToForm(employee) {
   return {
     name: employee.name || "",
-    password: "",
     email: employee.email || "",
     phone: employee.phone || "",
     post: employee.post || "",
@@ -59,7 +49,6 @@ function mapEmployeeToForm(employee) {
     salary: employee.salary ?? "",
     city: employee.city || "",
     status: employee.status || "UNDER REVIEW",
-    admin: employee.admin ?? false,
   };
 }
 
@@ -75,9 +64,10 @@ function FormState({ children, title, variant = "default" }) {
 
 function EmployeeEditorForm({ employee, id, isEditing }) {
   const navigate = useNavigate();
-  const [form, setForm] = useState(() =>
+  const [initialValues] = useState(() =>
     employee ? mapEmployeeToForm(employee) : initialForm,
   );
+  const [form, setForm] = useState(initialValues);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
@@ -91,18 +81,18 @@ function EmployeeEditorForm({ employee, id, isEditing }) {
     setIsSubmitting(true);
     setSubmitError(null);
 
-    const payload = {
-      ...form,
-      salary: Number(form.salary),
-      admin: Boolean(form.admin),
-    };
-
     try {
       if (isEditing) {
-        delete payload.password;
-        await updateEmployee(id, payload);
+        await updateEmployee(id, {
+          ...form,
+          salary: form.salary === "" ? 0 : Number(form.salary),
+        });
         navigate(`/employees/${id}`);
       } else {
+        const payload = {
+          ...form,
+          salary: form.salary === "" ? 0 : Number(form.salary),
+        };
         await createEmployee(payload);
         navigate("/employees");
       }
@@ -150,17 +140,8 @@ function EmployeeEditorForm({ employee, id, isEditing }) {
             value={form.name}
             onChange={handleChange}
             autoComplete="name"
+            required
           />
-          {!isEditing && (
-            <Field
-              label="Senha inicial"
-              name="password"
-              type="password"
-              value={form.password}
-              onChange={handleChange}
-              autoComplete="new-password"
-            />
-          )}
           <Field
             label="E-mail"
             name="email"
@@ -168,6 +149,7 @@ function EmployeeEditorForm({ employee, id, isEditing }) {
             value={form.email}
             onChange={handleChange}
             autoComplete="email"
+            required
           />
           <Field
             label="Telefone"
@@ -183,6 +165,7 @@ function EmployeeEditorForm({ employee, id, isEditing }) {
             type="text"
             value={form.post}
             onChange={handleChange}
+            required
           />
           <Field
             label="Departamento"
@@ -226,7 +209,7 @@ function EmployeeEditorForm({ employee, id, isEditing }) {
 
         <p className="form-help">
           {isEditing
-            ? "A edição envia todos os campos usando PUT."
+            ? "A edição completa envia todos os dados usando PUT."
             : "O status inicial é definido pela API no momento do cadastro."}
         </p>
 

@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useAuth } from "../context/useAuth.js";
 
 const menuItems = [
   { label: "Visão geral", path: "/", icon: "⌂" },
@@ -8,6 +9,15 @@ const menuItems = [
 ];
 
 export default function AppShell() {
+  const { user, logout } = useAuth();
+  const displayName = user?.name || "Admin";
+  const initials = displayName
+    .split(" ")
+    .slice(0, 2)
+    .map((name) => name[0])
+    .join("")
+    .toUpperCase();
+
   return (
     <div className="app-shell">
       <aside className="sidebar" aria-label="Menu principal">
@@ -31,6 +41,8 @@ export default function AppShell() {
               key={item.path}
               to={item.path}
               end={item.path === "/"}
+              aria-label={item.label}
+              title={item.label}
             >
               <span className="nav-icon" aria-hidden="true">
                 {item.icon}
@@ -53,14 +65,17 @@ export default function AppShell() {
             <p className="topbar-title">Painel administrativo</p>
           </div>
 
-          <div className="profile" aria-label="Usuário administrador">
+          <div className="profile" aria-label={`Usuário ${displayName}`}>
             <span className="avatar" aria-hidden="true">
-              AD
+              {initials}
             </span>
             <span className="profile-copy">
-              <strong>Admin</strong>
-              <small>Administrador</small>
+              <strong>{displayName}</strong>
+              <small>{user?.post || "Administrador"}</small>
             </span>
+            <button className="logout-button" type="button" onClick={logout}>
+              Sair
+            </button>
           </div>
         </header>
 

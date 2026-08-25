@@ -1,191 +1,197 @@
 package com.example.picstart.demo.controller;
 
-
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.example.picstart.demo.models.Employee;
-// import com.fasterxml.jackson.annotation.JacksonAnnotation;
-// import com.fasterxml.jackson.core.JsonProcessingException;
-// import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.example.picstart.demo.models.LoginResponse;
 
 @Service
 public class employeeService {
 
-    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-    private List<Employee> employee = new ArrayList<>();
-    
+    private final ArrayList<Employee> employees = new ArrayList<>();
+    private final Map<String, String> activeTokens = new ConcurrentHashMap<>();
+    private final PasswordEncoder passwordEncoder;
 
-    public employeeService(){
-        employee.add(new Employee (1, "Renan Santos de Almeida","123", "RenanSantos@picpay.com", "11 95677-5122", "Director", "TI", 20000, "São Paulo", "HIRED"));
-        employee.add(new Employee (2, "Jair Messias Bolsonaro","DeusPatriaFamilia", "bolsonaro@picpay.com", "11 12345-6789", "Director", "TI", 60000, "São Paulo", "UNDER REVIEW"));
-        employee.add(new Employee (3, "Guilherme Brandão","123", "Gui@picpay.com", "11 99999-9999", "Director", "TI", 90000, "TI", "REJECTED"));
-        employee.add(new Employee (4, "Rebecca Sarah Duarte Paulucci","Rebecca@01", "becca@picpay.com", "11 34577-5246","Systems Analyst", "TI", 10000, "São Paulo", "HIRED"));
-        employee.add(new Employee (5, "João Pedro Cappeli","Jojo@123", "jojo@picpay.com", "11 0000-0000","Systems Analyst", "TI", 5000, "São Paulo", "UNDER REVIEW"));
-
+    public employeeService(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+        seedEmployees();
     }
 
-    public Employee AddEmployee(Employee newEmployee) {
+    public Employee addEmployee(Employee newEmployee) {
+        int nextId = employees.stream()
+                .mapToInt(Employee::getId)
+                .max()
+                .orElse(0) + 1;
+        newEmployee.setId(nextId);
         newEmployee.setStatus("ACTIVE");
-        if (employee.isEmpty()) {
-            newEmployee.setId(1);
+        if (newEmployee.getPassword() != null && !newEmployee.getPassword().isBlank()) {
+            newEmployee.setPassword(passwordEncoder.encode(newEmployee.getPassword()));
         }
-        else {
-            int nextId = employee.stream()
-                    .mapToInt(Employee::getId)
-                    .max()
-                    .orElse(0) + 1;
-            newEmployee.setId(nextId);
-        }
-        employee.add(newEmployee);
+        employees.add(newEmployee);
         return newEmployee;
-        
     }
 
-    public List<Employee> listEmployees(){
-        return employee;
+    public List<Employee> listEmployees() {
+        return employees;
     }
 
-    public Employee listOneEmployee(int id){
-        for (Employee emp : employee) {
-            if (emp.getId() == id){
-                return emp;
+    public Employee listOneEmployee(int id) {
+        for (Employee employee : employees) {
+            if (employee.getId() == id) {
+                return employee;
             }
         }
         return null;
     }
 
-    public boolean deleteEmployee(int id){
-        for (int index = 0; index < employee.size(); index++) {
-            if (employee.get(index).getId() == id) {
-                employee.remove(index);
-                return true;
-            }
-        }
-
-        return false;
-
+    public boolean deleteEmployee(int id) {
+        return employees.removeIf((employee) -> employee.getId() == id);
     }
 
     public Employee partialUpdate(int id, Employee partialData) {
-        for (Employee emp : employee) {
-            if (emp.getId() == id) {
-                
-                if (partialData.getEmail() != null) {
-                    emp.setEmail(partialData.getEmail());
-                }
-                
-                if (partialData.getPhone() != null) {
-                    emp.setPhone(partialData.getPhone());
-                }
-                
-                if (partialData.getStatus() != null) {
-                    emp.setStatus(partialData.getStatus());
-                }
-                
-                if (partialData.getPost() != null) {
-                    emp.setPost(partialData.getPost());
-                }
-                
-                if (partialData.getDepartment() != null) {
-                    emp.setDepartment(partialData.getDepartment());
-                }
-                
-                if (partialData.getSalary() != 0.0) {
-                    emp.setSalary(partialData.getSalary());
-                }
-                
-                if (partialData.getCity() != null) {
-                    emp.setCity(partialData.getCity());
-                }
-
-                if (partialData.getAdmin() != null){
-                    emp.setAdmin(partialData.getAdmin());
-                }
-
-                return emp; 
-            }
+        Employee employee = listOneEmployee(id);
+        if (employee == null) {
+            return null;
         }
-        return null;
+
+        if (partialData.getName() != null) {
+            employee.setName(partialData.getName());
+        }
+        if (partialData.getEmail() != null) {
+            employee.setEmail(partialData.getEmail());
+        }
+        if (partialData.getPhone() != null) {
+            employee.setPhone(partialData.getPhone());
+        }
+        if (partialData.getPost() != null) {
+            employee.setPost(partialData.getPost());
+        }
+        if (partialData.getDepartment() != null) {
+            employee.setDepartment(partialData.getDepartment());
+        }
+        if (partialData.getSalary() != null) {
+            employee.setSalary(partialData.getSalary());
+        }
+        if (partialData.getCity() != null) {
+            employee.setCity(partialData.getCity());
+        }
+        if (partialData.getStatus() != null) {
+            employee.setStatus(partialData.getStatus());
+        }
+
+        return employee;
     }
 
-    public Employee totalUpdate(int id, Employee totalData){
-        for (Employee emp: employee){
-            if (emp.getId() == id) {
-                if (emp.getId() == id){
-                    emp.setName(totalData.getName());
-                    emp.setEmail(totalData.getEmail());
-                    emp.setPhone(totalData.getPhone());
-                    emp.setPost(totalData.getPost());
-                    emp.setDepartment(totalData.getDepartment());
-                    emp.setSalary(totalData.getSalary());
-                    emp.setCity(totalData.getCity());
-                    emp.setStatus(totalData.getStatus());
-                    emp.setAdmin(totalData.getAdmin());
-
-                    return emp;
-                }
-            }
+    public Employee totalUpdate(int id, Employee totalData) {
+        Employee employee = listOneEmployee(id);
+        if (employee == null) {
+            return null;
         }
-        return null;
+
+        employee.setName(totalData.getName());
+        employee.setEmail(totalData.getEmail());
+        employee.setPhone(totalData.getPhone());
+        employee.setPost(totalData.getPost());
+        employee.setDepartment(totalData.getDepartment());
+        employee.setSalary(totalData.getSalary());
+        employee.setCity(totalData.getCity());
+        employee.setStatus(totalData.getStatus());
+        return employee;
     }
 
-    public boolean login(String email, String password) {
-        for (Employee emp: employee){
-            if (emp.getEmail().equals(email)){
-                boolean acces = encoder.matches(password, emp.getPassword());
-                return acces;
-                
-            }else{
-                return false;
-            }
-            }
-        return false;
-    }
+    public List<Employee> search(String name, String post, String status) {
+        String normalizedName = normalize(name);
+        String normalizedPost = normalize(post);
+        String normalizedStatus = normalize(status);
 
-    public List<Employee> search(String search){
-        List<Employee> founds = new ArrayList<>();
-
-        for (Employee emp: employee){
-            if (emp.getName().toLowerCase().contains(search.toLowerCase())){
-                founds.add(emp);
-            }
-        }
-        return founds;
+        return employees.stream()
+                .filter((employee) -> normalizedName.isEmpty()
+                        || normalize(employee.getName()).contains(normalizedName))
+                .filter((employee) -> normalizedPost.isEmpty()
+                        || normalize(employee.getPost()).contains(normalizedPost))
+                .filter((employee) -> normalizedStatus.isEmpty()
+                        || normalize(employee.getStatus()).equals(normalizedStatus))
+                .toList();
     }
 
     public Map<String, Integer> indicators() {
-
         Map<String, Integer> indicators = new HashMap<>();
+        indicators.put("TOTAL", employees.size());
+        indicators.put("UNDER REVIEW", 0);
+        indicators.put("APPROVED", 0);
+        indicators.put("REJECTED", 0);
+        indicators.put("HIRED", 0);
+        indicators.put("ACTIVE", 0);
 
-        indicators.put("UNDER REVIEW", indicators.getOrDefault("UNDER REVIEW", 0));
-        indicators.put("APPROVED", indicators.getOrDefault("APPROVED", 0));
-        indicators.put("REJECTED", indicators.getOrDefault("REJECTED", 0));
-        indicators.put("HIRED", indicators.getOrDefault("HIRED", 0));
-        
-        // Under review; Approved; Rejected; Hired.
-        for (Employee emp: employee){
-            switch (emp.getStatus()){
-                case "UNDER REVIEW":
-                    indicators.put("UNDER REVIEW", indicators.getOrDefault("UNDER REVIEW", 0) + 1);
-                    break;
-                case "APPROVED":
-                    indicators.put("APPROVED", indicators.getOrDefault("APPROVED", 0) + 1);
-                    break;
-                case "REJECTED":
-                    indicators.put("REJECTED", indicators.getOrDefault("REJECTED", 0) + 1);
-                    break;
-                case "HIRED":
-                    indicators.put("HIRED", indicators.getOrDefault("HIRED", 0) + 1);
-                    break;
-                default:
-            }
+        for (Employee employee : employees) {
+            String status = employee.getStatus();
+            indicators.put(status, indicators.getOrDefault(status, 0) + 1);
         }
+
         return indicators;
+    }
+
+    public LoginResponse login(String email, String password) {
+        if (email == null || password == null) {
+            return null;
+        }
+
+        Employee employee = employees.stream()
+                .filter((candidate) -> candidate.getEmail() != null
+                        && candidate.getEmail().equalsIgnoreCase(email.trim()))
+                .findFirst()
+                .orElse(null);
+
+        if (employee == null || employee.getPassword() == null
+                || !passwordEncoder.matches(password, employee.getPassword())) {
+            return null;
+        }
+
+        String token = UUID.randomUUID().toString();
+        activeTokens.put(token, employee.getEmail());
+        return new LoginResponse(token, employee);
+    }
+
+    public String findEmailByToken(String token) {
+        return token == null ? null : activeTokens.get(token);
+    }
+
+    public void logout(String token) {
+        if (token != null) {
+            activeTokens.remove(token);
+        }
+    }
+
+    private void seedEmployees() {
+        addSeedEmployee(1, "Renan Santos de Almeida", "RenanSantos@picpay.com", "11 95677-5122",
+                "Director", "TI", 20000, "São Paulo", "HIRED", "123");
+        addSeedEmployee(2, "Jair Messias Bolsonaro", "bolsonaro@picpay.com", "11 12345-6789",
+                "Director", "TI", 60000, "São Paulo", "UNDER REVIEW", "DeusPatriaFamilia");
+        addSeedEmployee(3, "Guilherme Brandão", "gui@picpay.com", "11 99999-9999",
+                "Director", "TI", 90000, "São Paulo", "REJECTED", "123");
+        addSeedEmployee(4, "Rebecca Sarah Duarte Paulucci", "becca@picpay.com", "11 34577-5246",
+                "Systems Analyst", "TI", 10000, "São Paulo", "HIRED", "123");
+        addSeedEmployee(5, "João Pedro Cappeli", "joao@picpay.com", "11 0000-0000",
+                "Systems Analyst", "TI", 5000, "São Paulo", "UNDER REVIEW", "123");
+    }
+
+    private void addSeedEmployee(int id, String name, String email, String phone, String post,
+            String department, double salary, String city, String status, String password) {
+        Employee employee = new Employee(id, name, email, phone, post, department, salary, city, status);
+        employee.setPassword(passwordEncoder.encode(password));
+        employees.add(employee);
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 }

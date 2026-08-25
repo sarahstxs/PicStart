@@ -2,45 +2,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import useEmployees from "../hooks/useEmployees.js";
 import { deleteEmployee } from "../services/employeeService.js";
-
-const statusPresentation = {
-  "UNDER REVIEW": {
-    label: "Em análise",
-    className: "status-analysis",
-  },
-  APPROVED: {
-    label: "Aprovado",
-    className: "status-approved",
-  },
-  REJECTED: {
-    label: "Reprovado",
-    className: "status-rejected",
-  },
-  HIRED: {
-    label: "Contratado",
-    className: "status-hired",
-  },
-};
-
-function formatSalary(salary) {
-  if (typeof salary !== "number") {
-    return "—";
-  }
-
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(salary);
-}
-
-function getStatusPresentation(status) {
-  return (
-    statusPresentation[status?.toUpperCase()] ?? {
-      label: status || "Sem status",
-      className: "status-analysis",
-    }
-  );
-}
+import {
+  formatSalary,
+  getStatusPresentation,
+  statusOptions,
+} from "../utils/employeePresentation.js";
 
 function PageState({ children, title, variant = "default" }) {
   return (
@@ -109,7 +75,9 @@ function DeleteIcon() {
 }
 
 export default function EmployeesPage() {
-  const { employees, isLoading, error, reload } = useEmployees();
+  const [filters, setFilters] = useState({ name: "", post: "", status: "" });
+  const hasFilters = Boolean(filters.name || filters.post || filters.status);
+  const { employees, isLoading, error, reload } = useEmployees(filters);
   const [employeeToDelete, setEmployeeToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
@@ -143,7 +111,7 @@ export default function EmployeesPage() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading && employees.length === 0 && !hasFilters) {
     return (
       <PageState title="Carregando funcionários...">
         <p>Estamos consultando a API Spring Boot.</p>
@@ -158,14 +126,6 @@ export default function EmployeesPage() {
         <button className="retry-button" type="button" onClick={reload}>
           Tentar novamente
         </button>
-      </PageState>
-    );
-  }
-
-  if (employees.length === 0) {
-    return (
-      <PageState title="Nenhum funcionário encontrado" variant="empty">
-        <p>A API respondeu, mas ainda não existem funcionários cadastrados.</p>
       </PageState>
     );
   }
@@ -188,91 +148,179 @@ export default function EmployeesPage() {
         </div>
       </div>
 
-      <article className="table-card">
+      <article className="table-card" aria-busy={isLoading}>
         <div className="table-card-header">
           <div>
             <h2>Todos os funcionários</h2>
-            <p>{employees.length} registros encontrados</p>
+            <p>
+              {employees.length} {employees.length === 1
+                ? "registro encontrado"
+                : "registros encontrados"}
+            </p>
           </div>
+          <form
+            className="search-form"
+            role="search"
+            onSubmit={(event) => event.preventDefault()}
+          >
+            <div className="search-fields">
+              <label className="search-field" htmlFor="employee-name-search">
+                <span>Nome</span>
+                <input
+                  id="employee-name-search"
+                  type="search"
+                  value={filters.name}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      name: event.target.value,
+                    }))
+                  }
+                  placeholder="Buscar por nome"
+                  autoComplete="off"
+                />
+              </label>
+              <label className="search-field" htmlFor="employee-post-search">
+                <span>Cargo</span>
+                <input
+                  id="employee-post-search"
+                  type="search"
+                  value={filters.post}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      post: event.target.value,
+                    }))
+                  }
+                  placeholder="Buscar por cargo"
+                  autoComplete="off"
+                />
+              </label>
+              <label className="search-field" htmlFor="employee-status-search">
+                <span>Status</span>
+                <select
+                  id="employee-status-search"
+                  value={filters.status}
+                  onChange={(event) =>
+                    setFilters((current) => ({
+                      ...current,
+                      status: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Todos os status</option>
+                  {statusOptions.map((status) => (
+                    <option key={status.value} value={status.value}>
+                      {status.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {hasFilters && (
+              <button
+                className="clear-search"
+                type="button"
+                onClick={() => setFilters({ name: "", post: "", status: "" })}
+              >
+                Limpar filtros
+              </button>
+            )}
+          </form>
         </div>
 
-        <div className="table-wrapper">
-          <table>
-            <caption className="sr-only">
-              Lista de funcionários cadastrados
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Nome</th>
-                <th scope="col">Email</th>
-                <th scope="col">Telefone</th>
-                <th scope="col">Cargo</th>
-                <th scope="col">Departamento</th>
-                <th scope="col">Cidade</th>
-                <th scope="col">Salário</th>
-                <th scope="col">Status</th>
-                <th scope="col">Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((employee) => {
-                const status = getStatusPresentation(employee.status);
+        {employees.length === 0 ? (
+          <div className="no-results" role="status">
+            <strong>
+              {hasFilters
+                ? "Nenhum funcionário encontrado"
+                : "Nenhum funcionário cadastrado"}
+            </strong>
+            <p>
+              {hasFilters
+                ? "Não encontramos resultados para os filtros informados."
+                : "A API respondeu, mas ainda não existem funcionários cadastrados."}
+            </p>
+          </div>
+        ) : (
+          <div className="table-wrapper">
+            <table>
+              <caption className="sr-only">
+                Lista de funcionários cadastrados
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Nome</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Telefone</th>
+                  <th scope="col">Cargo</th>
+                  <th scope="col">Departamento</th>
+                  <th scope="col">Cidade</th>
+                  <th scope="col">Salário</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                {employees.map((employee) => {
+                  const status = getStatusPresentation(employee.status);
 
-                return (
-                  <tr key={`${employee.id}-${employee.email}`}>
-                    <th scope="row">
-                      <span className="employee-name">{employee.name}</span>
-                    </th>
-                    <td>{employee.email}</td>
-                    <td>{employee.phone}</td>
-                    <td>{employee.post || "—"}</td>
-                    <td>{employee.department}</td>
-                    <td>{employee.city}</td>
-                    <td>{formatSalary(employee.salary)}</td>
-                    <td>
-                      <span className={`status-badge ${status.className}`}>
-                        <span
-                          className="status-badge-dot"
-                          aria-hidden="true"
-                        />
-                        {status.label}
-                      </span>
-                    </td>
-                    <td>
-                      <div className="table-actions">
-                        <Link
-                          className="icon-action view-action"
-                          to={`/employees/${employee.id}`}
-                          aria-label={`Ver detalhes de ${employee.name}`}
-                          title="Ver detalhes"
-                        >
-                          <ViewIcon />
-                        </Link>
-                        <Link
-                          className="icon-action edit-action"
-                          to={`/employees/${employee.id}/edit`}
-                          aria-label={`Editar ${employee.name}`}
-                          title="Editar funcionário"
-                        >
-                          <EditIcon />
-                        </Link>
-                        <button
-                          className="icon-action delete-action"
-                          type="button"
-                          onClick={() => openDeleteModal(employee)}
-                          aria-label={`Excluir ${employee.name}`}
-                          title="Excluir funcionário"
-                        >
-                          <DeleteIcon />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                  return (
+                    <tr key={`${employee.id}-${employee.email}`}>
+                      <th scope="row">
+                        <span className="employee-name">{employee.name}</span>
+                      </th>
+                      <td>{employee.email}</td>
+                      <td>{employee.phone}</td>
+                      <td>{employee.post || "—"}</td>
+                      <td>{employee.department}</td>
+                      <td>{employee.city}</td>
+                      <td>{formatSalary(employee.salary)}</td>
+                      <td>
+                        <span className={`status-badge ${status.className}`}>
+                          <span
+                            className="status-badge-dot"
+                            aria-hidden="true"
+                          />
+                          {status.label}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="table-actions">
+                          <Link
+                            className="icon-action view-action"
+                            to={`/employees/${employee.id}`}
+                            aria-label={`Ver detalhes de ${employee.name}`}
+                            title="Ver detalhes"
+                          >
+                            <ViewIcon />
+                          </Link>
+                          <Link
+                            className="icon-action edit-action"
+                            to={`/employees/${employee.id}/edit`}
+                            aria-label={`Editar ${employee.name}`}
+                            title="Editar funcionário"
+                          >
+                            <EditIcon />
+                          </Link>
+                          <button
+                            className="icon-action delete-action"
+                            type="button"
+                            onClick={() => openDeleteModal(employee)}
+                            aria-label={`Excluir ${employee.name}`}
+                            title="Excluir funcionário"
+                          >
+                            <DeleteIcon />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </article>
 
       {employeeToDelete && (
