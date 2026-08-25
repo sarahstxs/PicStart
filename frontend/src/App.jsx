@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AppShell from "./components/AppShell.jsx";
-import ComingSoonPage from "./pages/ComingSoonPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import EmployeeDetailsPage from "./pages/EmployeeDetailsPage.jsx";
 import EmployeeFormPage from "./pages/EmployeeFormPage.jsx";
@@ -29,8 +28,6 @@ export default function App() {
             <Route path="/employees/new" element={<EmployeeFormPage />} />
             <Route path="/employees/:id/edit" element={<EmployeeFormPage />} />
             <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
-            <Route path="/reports" element={<ComingSoonPage title="Relatórios" />} />
-            <Route path="/settings" element={<ComingSoonPage title="Configurações" />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Route>
