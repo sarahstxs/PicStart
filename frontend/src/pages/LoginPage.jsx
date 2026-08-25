@@ -91,9 +91,10 @@ export default function LoginPage() {
         </form>
 
         <div className="login-demo" aria-label="Acesso de teste">
-          <strong>Acesso para teste</strong>
-          <span>RenanSantos@picpay.com</span>
-          <span>Senha: 123</span>
+          <strong>Acesso padrão</strong>
+          <span>admin@picstart.com</span>
+          <span>Senha: admin</span>
+          <small style={{ marginTop: "8px", color: "#70837b" }}>Também funciona: RenanSantos@picpay.com / 123</small>
         </div>
       </section>
 
